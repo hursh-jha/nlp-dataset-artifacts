@@ -1,0 +1,91 @@
+
+  {
+    "premise": "A man with blond-hair, and a brown shirt drinking out of a public water fountain.",
+    "hypothesis": "A blond man getting a drink of soda from a fountain in the park.",
+    "label": 2
+  },
+  {
+    "premise": "A man with blond-hair, and a brown shirt drinking out of a public water fountain.",
+    "hypothesis": "A blond woman wearing a brown shirt is reading a book on a bench in the park.",
+    "label": 1
+  },
+  {
+    "premise": "A man with blond-hair, and a brown shirt drinking out of a public water fountain.",
+    "hypothesis": "A blond man drinking water inside a fountain.",
+    "label": 2
+  },
+  {
+    "premise": "Two women who just had lunch hugging and saying goodbye.",
+    "hypothesis": "There are three woman in this picture.",
+    "label": 2
+  },
+  {
+    "premise": "Two adults, one female in white, with shades and one male, gray clothes, walking across a street, away from a eatery with a blurred image of a dark colored red shirted person in the foreground.",
+    "hypothesis": "Two adults run across the street to get away from a red shirted person staring them.",
+    "label": 1
+  },
+  {
+    "premise": "Two adults, one female in white, with shades and one male, gray clothes, walking across a street, away from a eatery with a blurred image of a dark colored red shirted person in the foreground.",
+    "hypothesis": "The adults are both male.",
+    "label": 2
+  },
+  {
+    "premise": "Two adults, one female in white, with shades and one male, gray clothes, walking across a street, away from a eatery with a blurred image of a dark colored red shirted person in the foreground.",
+    "hypothesis": "There are women in the picture.",
+    "label": 0
+  },
+  {
+    "premise": "Two adults, one female in white, with shades and one male, gray clothes, walking across a street, away from a eatery with a blurred image of a dark colored red shirted person in the foreground.",
+    "hypothesis": "Two adults walking across a bumpy road.",
+    "label": 1
+  },
+  {
+    "premise": "Two adults, one female in white, with shades and one male, gray clothes, walking across a street, away from a eatery with a blurred image of a dark colored red shirted person in the foreground.",
+    "hypothesis": "Two adults cross a street.",
+    "label": 0
+  },
+  {
+    "premise": "A woman wearing all white and eating, walks next to a man holding a briefcase.",
+    "hypothesis": "A married couple is walking.",
+    "label": 1
+  },
+  {
+    "premise": "A woman wearing all white and eating, walks next to a man holding a briefcase.",
+    "hypothesis": "A female is in front of a man.",
+    "label": 2
+  },
+  {
+    "premise": "A woman wearing all white and eating, walks next to a man holding a briefcase.",
+    "hypothesis": "A married couple is standing next to each other.",
+    "label": 2
+  },
+  {
+    "premise": "A woman wearing all white and eating, walks next to a man holding a briefcase.",
+    "hypothesis": "Somebody has food.",
+    "label": 0
+  },
+  {
+    "premise": "A woman is walking across the street eating a banana, while a man is following with his briefcase.",
+    "hypothesis": "A woman eats a banana and walks across a street, and there is a woman trailing behind her.",
+    "label": 2
+  },
+  {
+    "premise": "A woman is walking across the street eating a banana, while a man is following with his briefcase.",
+    "hypothesis": "A woman eats a banana and walks across a street, and there is a man talking behind her.",
+    "label": 1
+  },
+  {
+    "premise": "A woman is walking across the street eating a banana, while a man is following with his briefcase.",
+    "hypothesis": "A person sleeping.",
+    "label": 2
+  },
+  {
+    "premise": "A skier slides along a metal rail.",
+    "hypothesis": "The person sings.",
+    "label": 1
+  },
+  {
+    "premise": "A skier slides along a metal rail.",
+    "hypothesis": "The skier jumps from the metal rail.",
+    "label": 2
+  },
