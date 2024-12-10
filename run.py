@@ -4,13 +4,40 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, \
 import evaluate
 from helpers import prepare_dataset_nli, prepare_train_dataset_qa, \
     prepare_validation_dataset_qa, QuestionAnsweringTrainer, compute_accuracy
+import numpy as np
 import os
 import json
 
 NUM_PREPROCESSING_WORKERS = 2
 
+def load_glove_model(File):
+    print("Loading Glove Model")
+    glove_model = {}
+    with open(File,'r') as f:
+        for line in f:
+            split_line = line.split()
+            word = split_line[0]
+            embedding = np.array (split_line[1:], dtype=np.float64)
+            glove_model[word] = embedding
+    print(f"{len(glove_model)} words loaded!")
+    return glove_model
 
+def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    norm_vec1 = np.linalg.norm(vec1)
+    norm_vec2 = np.linalg.norm(vec2)
+    similarity = dot_product / (norm_vec1 * norm_vec2)
+    return similarity
 def main():
+    glove = load_glove_model('glove.6B.50d.txt')
+    # print(np.linalg.norm(glove['behind']))
+    # print(np.linalg.norm(glove['rear']))
+    # print(cosine_similarity(glove['above'], glove['below']))
+    # print(cosine_similarity(glove['above'], glove['up']))
+    # print(cosine_similarity(glove['above'], glove['behind']))
+    # print(cosine_similarity(glove['female'], glove['woman']))
+    # print(cosine_similarity(glove['female'], glove['male']))
+    
     argp = HfArgumentParser(TrainingArguments)
     # The HfArgumentParser object collects command-line arguments into an object (and provides default values for unspecified arguments).
     # In particular, TrainingArguments has several keys that you'll need/want to specify (when you call run.py from the command line):
@@ -205,6 +232,7 @@ def main():
                 for i, example in enumerate(eval_dataset):
                     example_with_prediction = dict(example)
                     example_with_prediction['predicted_scores'] = eval_predictions.predictions[i].tolist()
+                    
                     example_with_prediction['predicted_label'] = int(eval_predictions.predictions[i].argmax())
                     f.write(json.dumps(example_with_prediction))
                     f.write('\n')
