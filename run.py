@@ -12,9 +12,65 @@ NUM_PREPROCESSING_WORKERS = 2
 already_printed = False
 prepositions = ["about","above","across","after", "against","along","alongside","amid","among","around", "aside","at",
   "atop","before","behind","below","beneath","beside","besides","between","beyond","by","circa","down","during","following",
-  "from","given","in","inside","into","mid","midst","near","next","off","on","opposite",
+  "from","in","inside","into","mid","midst","near","next","off","on","opposite",
   "out","outside","over","past","through","till","to","toward","towards","under","underneath","up",
   "upon","with","within"]
+
+prep_map = {
+    "about": [.7,0,0,0],
+    "above": [0,.7,0,0],
+    "across": [-.7,0,0,0],
+    "after": [0,0,.7,0],
+    "against": [-.5,0,0,0],
+    "along": [.4,0,0,.2],
+    "alongside": [.5,0,0,.1],
+    "amid": [.6,0,0, 0],
+    "among": [.6,0,0,0],
+    "around": [.6,0,0,0],
+    "aside": [.2,0,0,.0],
+    "at": [.4,0,0,.0],
+    "atop": [0,.4,0,.0],
+    "before": [0,0,-.7,0],
+    "behind": [0,0,-.7,0],
+    "below": [0,-.7,0,0],
+    "beneath": [0,-.7,0,0],
+    "beside": [.6,0,0,0],
+    "besides": [.6,0,0,0],
+    "between": [.5,0,0,0],
+    "beyond": [-.2,0,.5,0],
+    "by": [.5,0,0,0],
+    "circa": [.7,0,0,0],
+    "down": [0,-.7,0,0],
+    "during": [.2,0,-.1,0],
+    "following": [.3,0,.4,0],
+    "from": [.5,0,-.3,0],
+    "in": [.5,0,0,0],
+    "inside": [.5,0,0,0],
+    "into": [.5,0,0,0],
+    "mid": [.5,0,0,0],
+    "midst": [.5,0,0,0],
+    "near": [.5,0,0,0],
+    "next": [.3,0,.3,0],
+    "off": [0,-.2,-.2,0],
+    "on": [0,.2,.2,0],
+    "opposite": [0,0,-.7,0],
+    "out": [0,0,-.3,0],
+    "outside": [0,0,-.4,0],
+    "over": [0,.5,.3,0],
+    "past": [-.3,0,.5,0],
+    "through": [0,0,.5,0],
+    "till": [0,0,.5,0],
+    "to": [0,0,.5,0],
+    "toward": [0,0,.5,0],
+    "towards": [0,0,.5,0],
+    "under": [0,-.7,0,0],
+    "underneath": [0,-.7,0,0],
+    "up": [0,.5,0,0],
+    "upon": [0,.5,0,0],
+    "with": [.5,0,0,0],
+    "within": [.5,0,0,0]
+}
+
 def load_glove_model(File):
     print("Loading Glove Model")
     glove_model = {}
@@ -164,18 +220,41 @@ def main():
     eval_dataset = None
     train_dataset_featurized = None
     eval_dataset_featurized = None
+    # print(dataset['train'][0])
     # for val in dataset['train']:
         # val['premise'] = val['premise'] + 'and false is not true'
     if training_args.do_train:
         train_dataset = dataset['train'] #+ datasets.load_dataset('json', data_files="contrast_data.json")
         if args.max_train_samples:
             train_dataset = train_dataset.select(range(args.max_train_samples))
+            
+        contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
+        
+        
         train_dataset_featurized = train_dataset.map(
             prepare_train_dataset,
             batched=True,
             num_proc=NUM_PREPROCESSING_WORKERS,
             remove_columns=train_dataset.column_names
         )
+        
+        label_feature = datasets.ClassLabel(names=["entailment", "neutral", "contradiction"])
+
+        # Convert the contrast dataset's label column to ClassLabel
+        
+        contrast_dataset_featurized = contrast_data.map(
+            prepare_train_dataset,
+            batched=True,
+            num_proc=NUM_PREPROCESSING_WORKERS,
+            remove_columns=contrast_data.column_names
+        )
+        contrast_dataset_featurized = contrast_dataset_featurized.cast_column("label", label_feature)
+
+        # print(train_dataset_featurized.features)
+        # print(contrast_dataset_featurized.features)
+        # print("after")
+        combined_train_dataset = datasets.concatenate_datasets([train_dataset_featurized, contrast_dataset_featurized])
+        
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
         if args.max_eval_samples:
@@ -221,15 +300,26 @@ def main():
     #     tokenizer=tokenizer,
     #     compute_metrics=compute_metrics_and_store_predictions
     # )
-    contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
-    contrast_data_featurized = contrast_data.map(
-            prepare_train_dataset,
-            batched=True,
-            num_proc=NUM_PREPROCESSING_WORKERS,
-            remove_columns=train_dataset.column_names
-        )
-    print(train_dataset_featurized.features)
-    combined_train_dataset = datasets.concatenate_datasets([contrast_data_featurized, train_dataset_featurized])
+    # dict_list = []
+    # with open ('contrast_data.json', 'r') as f:
+    #     while True:
+    #         f.readline()
+    #         try:
+    #             f.readline()
+    #             dict_list.append({"premise": f.readline(), "hypothesis": f.readline(), "label": f.readline()})
+    #             f.readline()
+    #         except:
+    #             break
+    
+    # contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
+    # contrast_data_featurized = contrast_data.map(
+    #         prepare_train_dataset,
+    #         batched=True,
+    #         num_proc=NUM_PREPROCESSING_WORKERS,
+    #         remove_columns=train_dataset.column_names
+    #     )
+    # print(contrast_data[0])
+    # combined_train_dataset = datasets.concatenate_datasets([dataset.from_dict(dict_list), train_dataset_featurized])
 
     trainerCustom = MyPred
     trainer = trainerCustom(
@@ -253,9 +343,9 @@ def main():
         #   and https://huggingface.co/transformers/main_classes/callback.html#transformers.TrainerCallback
 
     if training_args.do_eval:
-        print("before evaluation")
+        # print("before evaluation")
         results = trainer.evaluate(**eval_kwargs)
-        print(eval_dataset)
+        # print(eval_dataset)
 
         # To add custom metrics, you should replace the "compute_metrics" function (see comments above).
         #
@@ -317,7 +407,7 @@ class MyPred(Trainer):
             prep_compared_similarity = {}
             for word in premise_prep:
                 for word2 in hypothesis_prep:
-                    prep_compared_similarity[word + ' ' + word2] = cosine_similarity(glove[word], glove[word2])
+                    prep_compared_similarity[word + ' ' + word2] = cosine_similarity(prep_map[word], prep_map[word2])
             used_prepositions = {}
             all_combinations = list(prep_compared_similarity.keys())
             flag = True
@@ -341,14 +431,15 @@ class MyPred(Trainer):
                 for pair in final_pairs:
                     average_similarity += prep_compared_similarity[pair]
                 average_similarity /= len(final_pairs)
-                if average_similarity > .7:
+                # print("average similarity: ", average_similarity)
+                if average_similarity >= .5:
                     # logits[batch_idx][example_ids][0] +=  (.5 - average_similarity)
-                    logits[batch_idx][0] += (.5 - average_similarity)
+                    logits[batch_idx][0] += 8#(.5 - average_similarity)
                     # print("similar")
-                elif average_similarity < .3:
+                elif average_similarity <= -.5:
                     # print("not similar")
                     # logits[batch_idx][example_ids][2] +=  (.5 - average_similarity)
-                    logits[batch_idx][2] += (.5 - average_similarity)
+                    logits[batch_idx][2] += 8#(.5 - average_similarity)
                 # labels[i] = logits[i].argmax() 
         
         return (loss, logits, labels)
