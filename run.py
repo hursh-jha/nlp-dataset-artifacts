@@ -221,6 +221,7 @@ def main():
     train_dataset_featurized = None
     eval_dataset_featurized = None
     combined_train_dataset = None
+    mnli_train_dataset = None
     # print(dataset['train'][0])
     # for val in dataset['train']:
         # val['premise'] = val['premise'] + 'and false is not true'
@@ -228,8 +229,6 @@ def main():
         train_dataset = dataset['train'] #+ datasets.load_dataset('json', data_files="contrast_data.json")
         if args.max_train_samples:
             train_dataset = train_dataset.select(range(args.max_train_samples))
-            
-        contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
         
         train_dataset_featurized = train_dataset.map(
             prepare_train_dataset,
@@ -241,6 +240,7 @@ def main():
         label_feature = datasets.ClassLabel(names=["entailment", "neutral", "contradiction"])
 
         # Convert the contrast dataset's label column to ClassLabel
+        contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
         
         contrast_dataset_featurized = contrast_data.map(
             prepare_train_dataset,
@@ -248,12 +248,27 @@ def main():
             num_proc=NUM_PREPROCESSING_WORKERS,
             remove_columns=contrast_data.column_names
         )
-        contrast_dataset_featurized = contrast_dataset_featurized.cast_column("label", label_feature)
+        # contrast_dataset_featurized = contrast_dataset_featurized.cast_column("label", label_feature)
 
-        # print(train_dataset_featurized.features)
+        print(train_dataset_featurized)
         # print(contrast_dataset_featurized.features)
         # print("after")
+        print(contrast_dataset_featurized.features)
+        
         combined_train_dataset = datasets.concatenate_datasets([train_dataset_featurized, contrast_dataset_featurized])
+        
+        mnli_data = datasets.load_dataset('json', data_files="newfile.json", split='train')
+        mnli_dataset_featurized = mnli_data.map(
+            prepare_train_dataset,
+            batched=True,
+            num_proc=NUM_PREPROCESSING_WORKERS,
+            remove_columns=mnli_data.column_names
+        )
+        # mnli_dataset_featurized = mnli_dataset_featurized.remove_columns(["key"])
+        # mnli_dataset_featurized = mnli_dataset_featurized.cast_column("label", label_feature)
+        print(train_dataset_featurized.features)
+        print(mnli_dataset_featurized.features)
+        mnli_train_dataset = datasets.concatenate_datasets([mnli_dataset_featurized, train_dataset_featurized])
         
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
@@ -325,7 +340,7 @@ def main():
     trainer = trainerCustom(
         model=model,
         args=training_args,
-        train_dataset=combined_train_dataset,
+        train_dataset=mnli_train_dataset,
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions
