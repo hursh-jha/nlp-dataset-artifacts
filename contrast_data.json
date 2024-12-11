@@ -268,13 +268,38 @@
     "label": 2
   },
   {
-    "premise": "twos small brown monkeys on a wall fighting with each other.",
-    "hypothesis": "Three monkeys are fighting.",
+    "premise": "Two men and a woman are trimming palm trees and loading the fronds onto a flatbed.",
+    "hypothesis": "Three people are trimming palm trees and loading the fronds onto a flatbed.",
+    "label": 0
+  },
+  {
+    "premise": "Two men and a woman are trimming palm trees and loading the fronds onto a flatbed.",
+    "hypothesis": "Four people are trimming palm trees and loading the fronds onto a flatbed.",
     "label": 2
   },
   {
-    "premise": "twos small brown monkeys on a wall fighting with each other.",
-    "hypothesis": "Four monkeys are fighting.",
+    "premise": "Two men and a woman are trimming palm trees and loading the fronds onto a flatbed.",
+    "hypothesis": "Five people are trimming palm trees and loading the fronds onto a flatbed.",
+    "label": 2
+  },
+  {
+    "premise": "Three bananas and one orange are on a table.",
+    "hypothesis": "There are four fruits on the table.",
+    "label": 0
+  },
+  {
+    "premise": "Three bananas and one orange are on a table.",
+    "hypothesis": "There are three fruits on the table.",
+    "label": 2
+  },
+  {
+    "premise": "One man fights another.",
+    "hypothesis": "Two men are fighting.",
+    "label": 0
+  },
+  {
+    "premise": "One man fights another.",
+    "hypothesis": "Three men are fighting.",
     "label": 2
   },
   {
@@ -316,5 +341,56 @@
     "premise": "Although most people run, I can't walk.",
     "hypothesis": "Most people run.",
     "label": 0
+  },
+
+  {
+    "premise": "People should not jump up and down.",
+    "hypothesis": "People shouldn't jump.",
+    "label": 0
+  },
+  {
+    "premise": "Most of the people survey said they did not like apples.",
+    "hypothesis": "Most people dislike apples.",
+    "label": 0
+  },
+  {
+    "premise": "Populating datasets with lots of information is hard, but it is worth it.",
+    "hypothesis": "Populating datasets is not worth it.",
+    "label": 2
+  },
+  {
+    "premise": "I wish I could fly, but I can only walk.",
+    "hypothesis": "I can fly.",
+    "label": 2
+  },
+  {
+    "premise": "I wish I could fly, but I can only walk.",
+    "hypothesis": "I can walk.",
+    "label": 0
+  },
+  {
+    "premise": "This moddel should be bad at seeing contridictions, but we have fixed it.",
+    "hypothesis": "This model is old.",
+    "label": 1
+  },
+  {
+    "premise": "There was a storm that came into town last week, but we didn't lose power.",
+    "hypothesis": "We was no storm.",
+    "label": 2
+  },
+  {
+    "premise": "There was a storm that came into town last week, but we didn't lose power.",
+    "hypothesis": "We lost power.",
+    "label": 2
+  },
+  {
+    "premise": "Tornados can cause a lot of property damage, but not in New York.",
+    "hypothesis": "Tornados cause propert damage in New York.",
+    "label": 1
+  },
+  {
+    "premise": "We are before the line.",
+    "hypothesis": "We are after the line.",
+    "label": 1
   }
 ]

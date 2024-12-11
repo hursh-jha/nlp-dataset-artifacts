@@ -9,7 +9,12 @@ import os
 import json
 
 NUM_PREPROCESSING_WORKERS = 2
-
+already_printed = False
+prepositions = ["about","above","across","after", "against","along","alongside","amid","among","around", "aside","at",
+  "atop","before","behind","below","beneath","beside","besides","between","beyond","by","circa","down","during","following",
+  "from","given","in","inside","into","mid","midst","near","next","off","on","opposite",
+  "out","outside","over","past","through","till","to","toward","towards","under","underneath","up",
+  "upon","with","within"]
 def load_glove_model(File):
     print("Loading Glove Model")
     glove_model = {}
@@ -22,14 +27,38 @@ def load_glove_model(File):
     print(f"{len(glove_model)} words loaded!")
     return glove_model
 
+glove = load_glove_model('glove.6B.50d.txt')
+
 def cosine_similarity(vec1, vec2):
     dot_product = np.dot(vec1, vec2)
     norm_vec1 = np.linalg.norm(vec1)
     norm_vec2 = np.linalg.norm(vec2)
     similarity = dot_product / (norm_vec1 * norm_vec2)
     return similarity
+
+translate_dict = []
+with open('trained_model/vocab.txt', "r") as f:
+    for val in f:
+        translate_dict.append(val.strip())
+    # while True:
+    #     try: 
+    #         line = f.readline()
+    #         print(line)
+    #         translate_dict.add(line)
+    #     except:
+    #         break
+print(len(translate_dict))
+# print(type(translate_dict))
+
+def translate(index):
+    if index < len(translate_dict):
+        return translate_dict[index]
+    else:
+        # print(index)
+        return "UNK"
+
 def main():
-    glove = load_glove_model('glove.6B.50d.txt')
+    # glove = load_glove_model('glove.6B.50d.txt')
     # print(np.linalg.norm(glove['behind']))
     # print(np.linalg.norm(glove['rear']))
     # print(cosine_similarity(glove['above'], glove['below']))
@@ -135,8 +164,10 @@ def main():
     eval_dataset = None
     train_dataset_featurized = None
     eval_dataset_featurized = None
+    # for val in dataset['train']:
+        # val['premise'] = val['premise'] + 'and false is not true'
     if training_args.do_train:
-        train_dataset = dataset['train']
+        train_dataset = dataset['train'] #+ datasets.load_dataset('json', data_files="contrast_data.json")
         if args.max_train_samples:
             train_dataset = train_dataset.select(range(args.max_train_samples))
         train_dataset_featurized = train_dataset.map(
@@ -153,7 +184,6 @@ def main():
             prepare_eval_dataset,
             batched=True,
             num_proc=NUM_PREPROCESSING_WORKERS,
-            remove_columns=eval_dataset.column_names
         )
 
     # Select the training configuration
@@ -183,14 +213,34 @@ def main():
         return compute_metrics(eval_preds)
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
-    trainer = trainer_class(
+    # trainer = trainer_class(
+    #     model=model,
+    #     args=training_args,
+    #     train_dataset=train_dataset_featurized,
+    #     eval_dataset=eval_dataset_featurized,
+    #     tokenizer=tokenizer,
+    #     compute_metrics=compute_metrics_and_store_predictions
+    # )
+    contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
+    contrast_data_featurized = contrast_data.map(
+            prepare_train_dataset,
+            batched=True,
+            num_proc=NUM_PREPROCESSING_WORKERS,
+            remove_columns=train_dataset.column_names
+        )
+    print(train_dataset_featurized.features)
+    combined_train_dataset = datasets.concatenate_datasets([contrast_data_featurized, train_dataset_featurized])
+
+    trainerCustom = MyPred
+    trainer = trainerCustom(
         model=model,
         args=training_args,
-        train_dataset=train_dataset_featurized,
+        train_dataset=combined_train_dataset,
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions
     )
+    
     # Train and/or evaluate
     if training_args.do_train:
         trainer.train()
@@ -203,7 +253,9 @@ def main():
         #   and https://huggingface.co/transformers/main_classes/callback.html#transformers.TrainerCallback
 
     if training_args.do_eval:
+        print("before evaluation")
         results = trainer.evaluate(**eval_kwargs)
+        print(eval_dataset)
 
         # To add custom metrics, you should replace the "compute_metrics" function (see comments above).
         #
@@ -237,6 +289,69 @@ def main():
                     f.write(json.dumps(example_with_prediction))
                     f.write('\n')
 
+class MyPred(Trainer):
+    def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys = None):
+        loss, logits, labels = super().prediction_step(model, inputs, prediction_loss_only, ignore_keys)
+        # print("losses: ",loss)
+        # print("logits: ",logits)
+        # print("labels: ",labels)
+
+        indexes = inputs['input_ids'].tolist()
+        # print(indexes)
+        for batch_idx, example_ids in enumerate(indexes):
+            in_premise = True
+            premise_prep = set()
+            hypothesis_prep = set()
+            for token_id in example_ids:
+                if token_id != 0:
+                    if token_id == 102:  # SEP token for BERT/ELECTRA
+                        in_premise = False
+                    if in_premise:
+                        if translate(token_id).lower() in prepositions:
+                            premise_prep.add(translate(token_id))
+                    else:
+                        if translate(token_id).lower() in prepositions:
+                            hypothesis_prep.add(translate(token_id))
+                
+                
+            prep_compared_similarity = {}
+            for word in premise_prep:
+                for word2 in hypothesis_prep:
+                    prep_compared_similarity[word + ' ' + word2] = cosine_similarity(glove[word], glove[word2])
+            used_prepositions = {}
+            all_combinations = list(prep_compared_similarity.keys())
+            flag = True
+            while flag:
+                flag = False
+                a = 0
+                while a < len(all_combinations) - 1:
+                    if prep_compared_similarity[all_combinations[a]] < prep_compared_similarity[all_combinations[a+1]]:
+                        all_combinations[a], all_combinations[a+1] = all_combinations[a+1], all_combinations[a]
+                        flag = True
+                    a += 1
+            final_pairs = []
+            for pair in all_combinations:
+                if pair.split()[0] not in used_prepositions and pair.split()[1] not in used_prepositions:
+                    final_pairs.append(pair)
+                    used_prepositions[pair.split()[0]] = True
+                    used_prepositions[pair.split()[1]] = True
+            # print("final pairs: ", final_pairs)
+            if len(final_pairs) > 0:
+                average_similarity = 0
+                for pair in final_pairs:
+                    average_similarity += prep_compared_similarity[pair]
+                average_similarity /= len(final_pairs)
+                if average_similarity > .7:
+                    # logits[batch_idx][example_ids][0] +=  (.5 - average_similarity)
+                    logits[batch_idx][0] += (.5 - average_similarity)
+                    # print("similar")
+                elif average_similarity < .3:
+                    # print("not similar")
+                    # logits[batch_idx][example_ids][2] +=  (.5 - average_similarity)
+                    logits[batch_idx][2] += (.5 - average_similarity)
+                # labels[i] = logits[i].argmax() 
+        
+        return (loss, logits, labels)
 
 if __name__ == "__main__":
     main()
