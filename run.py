@@ -220,6 +220,7 @@ def main():
     eval_dataset = None
     train_dataset_featurized = None
     eval_dataset_featurized = None
+    combined_train_dataset = None
     # print(dataset['train'][0])
     # for val in dataset['train']:
         # val['premise'] = val['premise'] + 'and false is not true'
@@ -229,7 +230,6 @@ def main():
             train_dataset = train_dataset.select(range(args.max_train_samples))
             
         contrast_data = datasets.load_dataset('json', data_files="contrast_data.json", split='train')
-        
         
         train_dataset_featurized = train_dataset.map(
             prepare_train_dataset,
@@ -320,7 +320,7 @@ def main():
     #     )
     # print(contrast_data[0])
     # combined_train_dataset = datasets.concatenate_datasets([dataset.from_dict(dict_list), train_dataset_featurized])
-
+    # print(combined_train_dataset)
     trainerCustom = MyPred
     trainer = trainerCustom(
         model=model,
@@ -432,14 +432,16 @@ class MyPred(Trainer):
                     average_similarity += prep_compared_similarity[pair]
                 average_similarity /= len(final_pairs)
                 # print("average similarity: ", average_similarity)
-                if average_similarity >= .5:
-                    # logits[batch_idx][example_ids][0] +=  (.5 - average_similarity)
-                    logits[batch_idx][0] += 8#(.5 - average_similarity)
-                    # print("similar")
-                elif average_similarity <= -.5:
-                    # print("not similar")
-                    # logits[batch_idx][example_ids][2] +=  (.5 - average_similarity)
-                    logits[batch_idx][2] += 8#(.5 - average_similarity)
+                # if average_similarity >= .5:
+                #     # logits[batch_idx][example_ids][0] +=  (.5 - average_similarity)
+                #     logits[batch_idx][0] += 8#(.5 - average_similarity)
+                #     # print("similar")
+                # elif average_similarity <= -.5:
+                #     # print("not similar")
+                #     # logits[batch_idx][example_ids][2] +=  (.5 - average_similarity)
+                #     logits[batch_idx][2] += 8#(.5 - average_similarity)
+
+                
                 # labels[i] = logits[i].argmax() 
         
         return (loss, logits, labels)
