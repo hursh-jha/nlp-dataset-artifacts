@@ -104,7 +104,6 @@ with open('trained_model/vocab.txt', "r") as f:
     #     except:
     #         break
 print(len(translate_dict))
-# print(type(translate_dict))
 
 def translate(index):
     if index < len(translate_dict):
