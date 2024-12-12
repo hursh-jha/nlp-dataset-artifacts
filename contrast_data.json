@@ -79,7 +79,7 @@
   },
   {
     "premise": "A woman in a green jacket and hood over her head looking towards a valley.",
-    "hypothesis": "The woman is wearing a valley",
+    "hypothesis": "The woman in a valley",
     "label": 2,
     "key": 13
   },
@@ -466,5 +466,24 @@
     "hypothesis": "We are after the line.",
     "label": 1,
     "key": 77
+  },
+
+  {
+    "premise": "Four people walked into a bar, then two more people entered.",
+    "hypothesis": "Six people are in the bar.",
+    "label": 0,
+    "key": 78
+  },
+  {
+    "premise": "Four people walked into a bar, then two more people entered.",
+    "hypothesis": "Five people are in the bar.",
+    "label": 2,
+    "key": 79
+  },
+  {
+    "premise": "There are six cookies that will be spread across two people.",
+    "hypothesis": "Each person gets three cookies",
+    "label": 0,
+    "key": 80
   }
 ]
